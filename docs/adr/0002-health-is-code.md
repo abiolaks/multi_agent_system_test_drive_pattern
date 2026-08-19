@@ -1,0 +1,3 @@
+# Per-reading Health verdicts are code; Fault-Signature diagnosis is the LLM
+
+Comparing each Reading against its Threshold to produce a per-reading Health verdict (Normal / Advisory / Alarm) is done in deterministic code, not by the LLM. The model receives the per-reading verdicts plus the retrieved Guidance and produces the Fault-Signature diagnosis and Recommendations. Exact numeric comparisons are error-prone for self-hosted 32B–70B models and health classification must be reliable, so per-reading classification lives in testable code; matching the multi-reading pattern to a Fault Signature and writing the narrative are the LLM's job.
