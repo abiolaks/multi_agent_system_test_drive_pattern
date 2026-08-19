@@ -218,7 +218,7 @@ class TestAssetHealthDiagnosis(unittest.TestCase):
         # to the LLM - without it, no diagnosis step could ever distinguish
         # first-occurrence from recurrence
         self.assertEqual(len(llm.diagnose_calls), 1)
-        _verdicts, _guidance, maintenance_history_passed = llm.diagnose_calls[0]
+        _verdicts, _guidance, maintenance_history_passed, _web_context = llm.diagnose_calls[0]
         self.assertEqual(maintenance_history_passed, prior_balance)
 
         assert report.diagnosis is not None
@@ -256,7 +256,7 @@ class TestAssetHealthDiagnosis(unittest.TestCase):
 
         report = ask("what is the health status of ENG-003?", ports)
 
-        _verdicts, _guidance, maintenance_history_passed = llm.diagnose_calls[0]
+        _verdicts, _guidance, maintenance_history_passed, _web_context = llm.diagnose_calls[0]
         self.assertEqual(maintenance_history_passed, [])
         assert report.diagnosis is not None
         self.assertIn("trim balance", report.diagnosis.recommendation.next_step.lower())

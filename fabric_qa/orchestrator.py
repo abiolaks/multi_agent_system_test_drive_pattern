@@ -4,6 +4,7 @@ from fabric_qa.classify import Verdict, classify
 from fabric_qa.models import Report
 from fabric_qa.ports import Ports
 from fabric_qa.router import RouterDecision
+from fabric_qa.sanitize import sanitize_query
 from fabric_qa.thresholds import load_thresholds
 
 
@@ -41,8 +42,19 @@ def _ask_asset_health(question: str, decision: RouterDecision, ports: Ports) -> 
     if any(verdict.is_abnormal for verdict in verdicts):
         guidance = ports.knowledge_base.retrieve(asset_readings.asset_model)
         maintenance_history = ports.fabric.fetch_maintenance_history(asset_readings.asset_id)
-        diagnosis = ports.llm.diagnose(verdicts, guidance, maintenance_history)
+        sanitized_query = sanitize_query(
+            _build_web_search_query(question, verdicts),
+            asset_id=asset_readings.asset_id,
+            verdicts=verdicts,
+        )
+        web_context = ports.web_search.search(sanitized_query)
+        diagnosis = ports.llm.diagnose(verdicts, guidance, maintenance_history, web_context)
         return Report(summary=diagnosis.summary, verdicts=verdicts, diagnosis=diagnosis)
 
     summary = ports.llm.summarize(question, verdicts)
     return Report(summary=summary, verdicts=verdicts)
+
+
+def _build_web_search_query(question: str, verdicts: list[Verdict]) -> str:
+    detail = " ".join(f"{v.parameter} {v.value}" for v in verdicts if v.is_abnormal)
+    return f"{question} {detail} probable causes"

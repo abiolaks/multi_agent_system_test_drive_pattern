@@ -16,6 +16,7 @@ class LLMPort(Protocol):
         verdicts: list[Verdict],
         guidance: str,
         maintenance_history: list[MaintenanceRecord],
+        web_context: str,
     ) -> DiagnosisResult: ...
 
 

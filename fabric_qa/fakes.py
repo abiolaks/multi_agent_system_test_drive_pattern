@@ -19,7 +19,7 @@ class FakeLLMPort:
         self._diagnosis_response = diagnosis_response
         self.calls: list[tuple[str, Any]] = []
         self.route_calls: list[str] = []
-        self.diagnose_calls: list[tuple[list[Verdict], str, list[MaintenanceRecord]]] = []
+        self.diagnose_calls: list[tuple[list[Verdict], str, list[MaintenanceRecord], str]] = []
 
     def summarize(self, question: str, data: Any) -> str:
         self.calls.append((question, data))
@@ -34,8 +34,9 @@ class FakeLLMPort:
         verdicts: list[Verdict],
         guidance: str,
         maintenance_history: list[MaintenanceRecord],
+        web_context: str,
     ) -> DiagnosisResult:
-        self.diagnose_calls.append((verdicts, guidance, maintenance_history))
+        self.diagnose_calls.append((verdicts, guidance, maintenance_history, web_context))
         if self._diagnosis_response is None:
             raise ValueError(
                 "FakeLLMPort has no diagnosis_response configured; "
