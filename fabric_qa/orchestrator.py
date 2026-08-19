@@ -16,6 +16,9 @@ def ask(question: str, ports: Ports) -> Report:
 
 
 def _schedule_report(question: str, decision: RouterDecision, ports: Ports) -> Report:
+    if decision.topic == "asset_health" and decision.asset_id is None:
+        # fail fast at setup time - a fire has no caller to surface this to
+        raise ValueError("asset_health question routed with no asset_id to resolve")
     if decision.interval is None:
         return Report(summary="What day and time would you like this scheduled report sent?")
 

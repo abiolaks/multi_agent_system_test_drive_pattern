@@ -59,6 +59,24 @@ class TestSchedulingSetup(unittest.TestCase):
 
         self.assertEqual(scheduler.scheduled, [])
 
+    def test_recurring_asset_health_request_without_a_resolved_asset_id_fails_fast_at_setup(self) -> None:
+        # must fail here, not on fire - a fire has no caller to surface a
+        # crash to, so a bad request should never be confirmed as scheduled
+        scheduler = FakeSchedulerPort()
+        ports = make_ports(
+            llm=FakeLLMPort(
+                route_response=RouterDecision(
+                    topic="asset_health", asset_id=None, recurring=True, interval="weekly",
+                ),
+            ),
+            scheduler=scheduler,
+        )
+
+        with self.assertRaises(ValueError):
+            ask("email me my engines' health every week", ports)
+
+        self.assertEqual(scheduler.scheduled, [])
+
 
 class TestScheduledFires(unittest.TestCase):
     def test_each_fire_re_runs_the_flow_and_drafts_a_fresh_report(self) -> None:
