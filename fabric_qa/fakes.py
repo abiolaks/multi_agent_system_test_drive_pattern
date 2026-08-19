@@ -2,27 +2,53 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from fabric_qa.models import EmailDraft, FabricResult, Report
+from fabric_qa.models import AssetReadings, EmailDraft, FabricResult, Report
+from fabric_qa.router import RouterDecision
 
 
 class FakeLLMPort:
-    def __init__(self, response: str = "fake summary") -> None:
+    def __init__(
+        self,
+        response: str = "fake summary",
+        route_response: RouterDecision | None = None,
+    ) -> None:
         self._response = response
+        self._route_response = route_response if route_response is not None else RouterDecision(topic="general_data")
         self.calls: list[tuple[str, Any]] = []
+        self.route_calls: list[str] = []
 
     def summarize(self, question: str, data: Any) -> str:
         self.calls.append((question, data))
         return self._response
 
+    def route(self, question: str) -> RouterDecision:
+        self.route_calls.append(question)
+        return self._route_response
+
 
 class FakeFabricPort:
-    def __init__(self, result: FabricResult | None = None) -> None:
+    def __init__(
+        self,
+        result: FabricResult | None = None,
+        readings_result: AssetReadings | None = None,
+    ) -> None:
         self._result = result if result is not None else FabricResult(data={}, images=[])
+        self._readings_result = readings_result
         self.calls: list[str] = []
+        self.readings_calls: list[str] = []
 
     def fetch(self, question: str) -> FabricResult:
         self.calls.append(question)
         return self._result
+
+    def fetch_readings(self, asset_id: str) -> AssetReadings:
+        self.readings_calls.append(asset_id)
+        if self._readings_result is None:
+            raise ValueError(
+                "FakeFabricPort has no readings_result configured; "
+                "pass readings_result=AssetReadings(...) for asset-health tests"
+            )
+        return self._readings_result
 
 
 class FakeKnowledgeBasePort:
