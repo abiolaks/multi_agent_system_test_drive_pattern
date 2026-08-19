@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from fabric_qa.models import AssetReadings, EmailDraft, FabricResult, Report
+from fabric_qa.classify import Verdict
+from fabric_qa.models import AssetReadings, DiagnosisResult, EmailDraft, FabricResult, MaintenanceRecord, Report
 from fabric_qa.router import RouterDecision
 
 
@@ -11,11 +12,14 @@ class FakeLLMPort:
         self,
         response: str = "fake summary",
         route_response: RouterDecision | None = None,
+        diagnosis_response: DiagnosisResult | None = None,
     ) -> None:
         self._response = response
         self._route_response = route_response if route_response is not None else RouterDecision(topic="general_data")
+        self._diagnosis_response = diagnosis_response
         self.calls: list[tuple[str, Any]] = []
         self.route_calls: list[str] = []
+        self.diagnose_calls: list[tuple[list[Verdict], str, list[MaintenanceRecord]]] = []
 
     def summarize(self, question: str, data: Any) -> str:
         self.calls.append((question, data))
@@ -25,17 +29,34 @@ class FakeLLMPort:
         self.route_calls.append(question)
         return self._route_response
 
+    def diagnose(
+        self,
+        verdicts: list[Verdict],
+        guidance: str,
+        maintenance_history: list[MaintenanceRecord],
+    ) -> DiagnosisResult:
+        self.diagnose_calls.append((verdicts, guidance, maintenance_history))
+        if self._diagnosis_response is None:
+            raise ValueError(
+                "FakeLLMPort has no diagnosis_response configured; "
+                "pass diagnosis_response=DiagnosisResult(...) for diagnosis tests"
+            )
+        return self._diagnosis_response
+
 
 class FakeFabricPort:
     def __init__(
         self,
         result: FabricResult | None = None,
         readings_result: AssetReadings | None = None,
+        maintenance_history_result: list[MaintenanceRecord] | None = None,
     ) -> None:
         self._result = result if result is not None else FabricResult(data={}, images=[])
         self._readings_result = readings_result
+        self._maintenance_history_result = maintenance_history_result if maintenance_history_result is not None else []
         self.calls: list[str] = []
         self.readings_calls: list[str] = []
+        self.maintenance_history_calls: list[str] = []
 
     def fetch(self, question: str) -> FabricResult:
         self.calls.append(question)
@@ -49,6 +70,10 @@ class FakeFabricPort:
                 "pass readings_result=AssetReadings(...) for asset-health tests"
             )
         return self._readings_result
+
+    def fetch_maintenance_history(self, asset_id: str) -> list[MaintenanceRecord]:
+        self.maintenance_history_calls.append(asset_id)
+        return self._maintenance_history_result
 
 
 class FakeKnowledgeBasePort:

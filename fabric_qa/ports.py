@@ -3,18 +3,26 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable, Protocol
 
-from fabric_qa.models import AssetReadings, EmailDraft, FabricResult, Report
+from fabric_qa.classify import Verdict
+from fabric_qa.models import AssetReadings, DiagnosisResult, EmailDraft, FabricResult, MaintenanceRecord, Report
 from fabric_qa.router import RouterDecision
 
 
 class LLMPort(Protocol):
     def summarize(self, question: str, data: Any) -> str: ...
     def route(self, question: str) -> RouterDecision: ...
+    def diagnose(
+        self,
+        verdicts: list[Verdict],
+        guidance: str,
+        maintenance_history: list[MaintenanceRecord],
+    ) -> DiagnosisResult: ...
 
 
 class FabricPort(Protocol):
     def fetch(self, question: str) -> FabricResult: ...
     def fetch_readings(self, asset_id: str) -> AssetReadings: ...
+    def fetch_maintenance_history(self, asset_id: str) -> list[MaintenanceRecord]: ...
 
 
 class KnowledgeBasePort(Protocol):

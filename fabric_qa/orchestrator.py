@@ -37,5 +37,12 @@ def _ask_asset_health(question: str, decision: RouterDecision, ports: Ports) -> 
         for reading in asset_readings.readings
         if reading.parameter in thresholds
     ]
+
+    if any(verdict.is_abnormal for verdict in verdicts):
+        guidance = ports.knowledge_base.retrieve(asset_readings.asset_model)
+        maintenance_history = ports.fabric.fetch_maintenance_history(asset_readings.asset_id)
+        diagnosis = ports.llm.diagnose(verdicts, guidance, maintenance_history)
+        return Report(summary=diagnosis.summary, verdicts=verdicts, diagnosis=diagnosis)
+
     summary = ports.llm.summarize(question, verdicts)
     return Report(summary=summary, verdicts=verdicts)

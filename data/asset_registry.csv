@@ -1,0 +1,5 @@
+asset_id,tail_number,engine_position,manufacturer,model,serial_number,installation_date,hours_since_new,cycles_since_new,last_inspection_date
+ENG-001,N12345,L,CFM International,CFM56-7B26,SN-784512,2018-03-12,28450,15230,2026-05-25
+ENG-002,N12345,R,CFM International,CFM56-7B26,SN-784513,2018-03-12,28450,15230,2026-01-15
+ENG-003,N67890,L,GE Aviation,GEnx-1B,SN-902341,2020-07-19,19870,9120,2026-03-08
+ENG-004,N67890,R,GE Aviation,GEnx-1B,SN-902342,2020-07-19,19870,9120,2026-04-01

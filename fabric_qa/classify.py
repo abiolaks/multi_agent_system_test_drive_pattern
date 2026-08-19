@@ -9,6 +9,10 @@ class Verdict:
     value: float
     health: str
 
+    @property
+    def is_abnormal(self) -> bool:
+        return self.health != "Normal"
+
 
 def classify(value: float, spec: dict) -> str:
     if _breaches(value, spec.get("alarm", {})):

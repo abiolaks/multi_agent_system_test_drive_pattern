@@ -1,0 +1,8 @@
+work_order_id,asset_id,date,finding,parts_replaced,man_hours,cost
+WO-1001,ENG-001,2026-02-10,"Routine borescope - minor erosion noted, no action required",,4.0,800
+WO-1002,ENG-002,2026-01-15,Scheduled oil filter replacement,oil filter,1.5,250
+WO-1003,ENG-003,2026-03-08,Fan blade balancing performed after N2 vibration advisory,balance weights,6.0,1200
+WO-1004,ENG-004,2026-04-01,Scheduled 400-hour inspection - no findings,,3.0,600
+WO-1005,ENG-001,2026-05-25,"Follow-up borescope after EGT margin advisory - hot section erosion confirmed, continued monitoring recommended",,5.0,950
+WO-1006,ENG-003,2026-05-02,N2 vibration trending up again after temporary post-balancing improvement - fan blade inspection scheduled,,2.5,400
+WO-1007,ENG-001,2026-06-15,EGT margin now in alarm range - hot section replacement scheduled next heavy check,,3.0,500

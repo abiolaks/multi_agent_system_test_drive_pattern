@@ -1,0 +1,11 @@
+{
+  "asset_model": "CFM56-7B26",
+  "parameters": [
+    { "name": "egt_margin_c", "unit": "C",
+      "advisory": { "min": 40 }, "alarm": { "min": 20 } },
+    { "name": "vibration_n2_ips", "unit": "IPS",
+      "advisory": { "max": 2.0 }, "alarm": { "max": 4.0 } },
+    { "name": "oil_pressure_psi", "unit": "psi",
+      "advisory": { "min": 45 }, "alarm": { "min": 35 } }
+  ]
+}
