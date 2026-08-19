@@ -31,6 +31,22 @@ class TestSanitizeQuery(unittest.TestCase):
         )
         self.assertNotIn("14.0", sanitized)
 
+    def test_identifier_backstop_catches_lowercase_tokens_too(self) -> None:
+        sanitized = sanitize_query(
+            "contact eng-003 support",
+            asset_id="ENG-999",  # unrelated to the id in the query text
+            verdicts=[],
+        )
+        self.assertNotIn("eng-003", sanitized.lower())
+
+    def test_stripping_a_reading_value_does_not_corrupt_an_unrelated_larger_number(self) -> None:
+        sanitized = sanitize_query(
+            "vibration trend over 14.9 flight hours",
+            asset_id="ENG-003",
+            verdicts=[Verdict(parameter="vibration_n2_ips", value=4.9, health="Alarm")],
+        )
+        self.assertIn("14.9", sanitized)
+
     def test_strips_identifier_shaped_tokens_even_when_not_passed_explicitly(self) -> None:
         # a work-order id embedded in the raw query, e.g. copied in from
         # maintenance history text, must be stripped even though it was
