@@ -10,12 +10,34 @@ from fabric_qa.thresholds import load_thresholds
 
 def ask(question: str, ports: Ports) -> Report:
     decision = ports.llm.route(question)
-    if decision.topic == "asset_health":
-        report = _ask_asset_health(question, decision, ports)
-    else:
-        report = _ask_general_data(question, ports)
+    if decision.recurring:
+        return _schedule_report(question, decision, ports)
+    return _run_and_draft(question, decision, ports)
+
+
+def _schedule_report(question: str, decision: RouterDecision, ports: Ports) -> Report:
+    if decision.interval is None:
+        return Report(summary="What day and time would you like this scheduled report sent?")
+
+    def fire() -> None:
+        _run_and_draft(question, decision, ports)
+
+    # in-process only (ADR 0003) - a durable scheduler is a deliberate
+    # production change, not this port's job
+    ports.scheduler.schedule(decision.interval, fire)
+    return Report(summary=f"Scheduled: this report will run {decision.interval}.")
+
+
+def _run_and_draft(question: str, decision: RouterDecision, ports: Ports) -> Report:
+    report = _run_flow(question, decision, ports)
     ports.email.draft(report)
     return report
+
+
+def _run_flow(question: str, decision: RouterDecision, ports: Ports) -> Report:
+    if decision.topic == "asset_health":
+        return _ask_asset_health(question, decision, ports)
+    return _ask_general_data(question, ports)
 
 
 def _ask_general_data(question: str, ports: Ports) -> Report:
