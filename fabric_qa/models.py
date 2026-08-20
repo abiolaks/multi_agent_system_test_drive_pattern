@@ -62,3 +62,6 @@ class AssetReadings:
 class EmailDraft:
     report: Report
     sent: bool = False
+    # opaque handle a real EmailPort adapter can stash (e.g. a Graph message
+    # id) so a later send() knows what to act on; fakes never set this
+    provider_ref: str | None = None
