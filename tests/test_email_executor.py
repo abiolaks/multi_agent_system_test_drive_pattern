@@ -5,7 +5,7 @@ import unittest
 import agent_framework as af
 
 from fabric_qa.email_executor import DraftEmailExecutor
-from fabric_qa.models import EmailDraft, FabricResult, Report
+from fabric_qa.models import EmailDraft, Report
 
 
 class FakeContext:
@@ -22,7 +22,7 @@ def make_agent_executor_response(text: str) -> af.AgentExecutorResponse:
 
 
 class TestDraftEmailExecutor(unittest.IsolatedAsyncioTestCase):
-    async def test_assembles_report_with_summary_and_captured_images_then_drafts(self) -> None:
+    async def test_builds_the_report_via_the_injected_callback_then_drafts(self) -> None:
         drafted: list[EmailDraft] = []
 
         def draft(report: Report) -> EmailDraft:
@@ -30,19 +30,19 @@ class TestDraftEmailExecutor(unittest.IsolatedAsyncioTestCase):
             drafted.append(email_draft)
             return email_draft
 
-        captured = [FabricResult(data="x", images=[b"img1", b"img2"])]
-        executor = DraftEmailExecutor(draft, captured)
+        def build_report(response: af.AgentExecutorResponse) -> Report:
+            return Report(summary=f"built: {response.agent_response.text}")
+
+        executor = DraftEmailExecutor(draft, build_report)
         ctx = FakeContext()
 
         await executor.handle(make_agent_executor_response("Revenue rose 12%."), ctx)  # type: ignore[arg-type]
 
         self.assertEqual(len(drafted), 1)
-        report = drafted[0].report
-        self.assertEqual(report.summary, "Revenue rose 12%.")
-        self.assertEqual(report.images, [b"img1", b"img2"])
-        self.assertEqual(ctx.yielded, [report])
+        self.assertEqual(drafted[0].report.summary, "built: Revenue rose 12%.")
+        self.assertEqual(ctx.yielded, [drafted[0].report])
 
-    async def test_images_from_multiple_captured_fetches_are_all_included(self) -> None:
+    async def test_never_sends_only_drafts(self) -> None:
         drafted: list[EmailDraft] = []
 
         def draft(report: Report) -> EmailDraft:
@@ -50,15 +50,16 @@ class TestDraftEmailExecutor(unittest.IsolatedAsyncioTestCase):
             drafted.append(email_draft)
             return email_draft
 
-        captured = [
-            FabricResult(data="x", images=[b"img1"]),
-            FabricResult(data="y", images=[b"img2"]),
-        ]
-        executor = DraftEmailExecutor(draft, captured)
+        executor = DraftEmailExecutor(draft, lambda response: Report(summary="s"))
 
         await executor.handle(make_agent_executor_response("s"), FakeContext())  # type: ignore[arg-type]
 
-        self.assertEqual(drafted[0].report.images, [b"img1", b"img2"])
+        self.assertFalse(drafted[0].sent)
+
+    async def test_custom_id_is_used_when_given(self) -> None:
+        executor = DraftEmailExecutor(lambda r: EmailDraft(report=r), lambda response: Report(summary="s"), id="custom")
+
+        self.assertEqual(executor.id, "custom")
 
 
 if __name__ == "__main__":
