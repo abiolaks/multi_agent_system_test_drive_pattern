@@ -4,7 +4,13 @@ import unittest
 
 import agent_framework as af
 
-from fabric_qa.asset_health import FetchAndClassifyExecutor, build_asset_health_report, compute_verdicts
+from fabric_qa.asset_health import (
+    AssetHealthContext,
+    FetchAndClassifyExecutor,
+    PrepareNormalSummaryExecutor,
+    build_asset_health_report,
+    compute_verdicts,
+)
 from fabric_qa.classify import Verdict
 from fabric_qa.models import AssetReadings, Reading
 from fabric_qa.router import RouterDecision
@@ -35,27 +41,43 @@ class TestComputeVerdicts(unittest.TestCase):
 
 
 class TestFetchAndClassifyExecutor(unittest.IsolatedAsyncioTestCase):
-    async def test_fetches_readings_and_sends_a_formatted_summary_prompt_onward(self) -> None:
+    async def test_fetches_readings_and_sends_an_asset_health_context_onward(self) -> None:
         readings = AssetReadings(
             asset_id="ENG-001",
             asset_model="CFM56-7B26",
             readings=[Reading(parameter="egt_margin_c", value=14.0)],
         )
-        captured: list[list[Verdict]] = []
-        executor = FetchAndClassifyExecutor(lambda asset_id: readings, captured)
+        executor = FetchAndClassifyExecutor(lambda asset_id: readings)
         ctx = FakeContext()
 
         await executor.handle(RouterDecision(topic="asset_health", asset_id="ENG-001"), ctx)  # type: ignore[arg-type]
 
-        self.assertEqual(captured, [[Verdict(parameter="egt_margin_c", value=14.0, health="Alarm")]])
         self.assertEqual(len(ctx.sent), 1)
-        self.assertIn("egt_margin_c", ctx.sent[0])  # type: ignore[operator]
+        context = ctx.sent[0]
+        self.assertEqual(context.asset_id, "ENG-001")  # type: ignore[union-attr]
+        self.assertEqual(context.asset_model, "CFM56-7B26")  # type: ignore[union-attr]
+        self.assertEqual(context.verdicts, [Verdict(parameter="egt_margin_c", value=14.0, health="Alarm")])  # type: ignore[union-attr]
 
     async def test_raises_a_clear_error_when_no_asset_id_was_resolved(self) -> None:
-        executor = FetchAndClassifyExecutor(lambda asset_id: (_ for _ in ()).throw(AssertionError()), [])
+        executor = FetchAndClassifyExecutor(lambda asset_id: (_ for _ in ()).throw(AssertionError()))
 
         with self.assertRaises(ValueError):
             await executor.handle(RouterDecision(topic="asset_health", asset_id=None), FakeContext())  # type: ignore[arg-type]
+
+
+class TestPrepareNormalSummaryExecutor(unittest.IsolatedAsyncioTestCase):
+    async def test_captures_verdicts_and_sends_a_formatted_summary_prompt_onward(self) -> None:
+        verdicts = [Verdict(parameter="egt_margin_c", value=56.0, health="Normal")]
+        context = AssetHealthContext(asset_id="ENG-001", asset_model="CFM56-7B26", verdicts=verdicts)
+        captured: list[list[Verdict]] = []
+        executor = PrepareNormalSummaryExecutor(captured)
+        ctx = FakeContext()
+
+        await executor.handle(context, ctx)  # type: ignore[arg-type]
+
+        self.assertEqual(captured, [verdicts])
+        self.assertEqual(len(ctx.sent), 1)
+        self.assertIn("egt_margin_c", ctx.sent[0])  # type: ignore[operator]
 
 
 class TestBuildAssetHealthReport(unittest.TestCase):
