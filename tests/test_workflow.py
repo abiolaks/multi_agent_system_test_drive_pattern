@@ -29,6 +29,10 @@ def unused_web_search(query: str) -> str:
     raise AssertionError(f"web_search should not have been called for query={query!r}")
 
 
+def unused_schedule(interval: str, callback) -> None:
+    raise AssertionError(f"schedule should not have been called for interval={interval!r}")
+
+
 def make_diagnosis_output(
     fault_signature: str = "f", next_step: str = "n", citation: str = "cite"
 ) -> DiagnosisOutput:
@@ -67,6 +71,7 @@ class TestGeneralDataFlow(unittest.IsolatedAsyncioTestCase):
             retrieve_guidance=unused_retrieve_guidance,
             web_search=unused_web_search,
             email_draft=email_draft,
+            schedule=unused_schedule,
         )
 
         self.assertEqual(report.summary, "Revenue rose 12% quarter over quarter.")
@@ -89,6 +94,7 @@ class TestGeneralDataFlow(unittest.IsolatedAsyncioTestCase):
             retrieve_guidance=unused_retrieve_guidance,
             web_search=unused_web_search,
             email_draft=lambda r: EmailDraft(report=r),
+            schedule=unused_schedule,
         )
 
         self.assertEqual(report.images, [])
@@ -121,6 +127,7 @@ class TestAssetHealthNormalFlow(unittest.IsolatedAsyncioTestCase):
             retrieve_guidance=unused_retrieve_guidance,
             web_search=unused_web_search,
             email_draft=email_draft,
+            schedule=unused_schedule,
         )
 
         self.assertEqual(report.summary, "Everything looks normal.")
@@ -145,6 +152,7 @@ class TestAssetHealthNormalFlow(unittest.IsolatedAsyncioTestCase):
             retrieve_guidance=unused_retrieve_guidance,
             web_search=unused_web_search,
             email_draft=lambda r: EmailDraft(report=r),
+            schedule=unused_schedule,
         )
 
         self.assertEqual(report.verdicts, [])
@@ -169,6 +177,7 @@ class TestAssetHealthNormalFlow(unittest.IsolatedAsyncioTestCase):
             retrieve_guidance=unused_retrieve_guidance,
             web_search=unused_web_search,
             email_draft=lambda r: EmailDraft(report=r),
+            schedule=unused_schedule,
         )
 
         self.assertEqual(report.images, [])
@@ -214,6 +223,7 @@ class TestAssetHealthDiagnosisFlow(unittest.IsolatedAsyncioTestCase):
             retrieve_guidance=retrieve_guidance,
             web_search=unused_web_search,
             email_draft=lambda r: EmailDraft(report=r),
+            schedule=unused_schedule,
         )
 
         self.assertEqual(report.summary, diagnosis_output.summary)
@@ -274,6 +284,7 @@ class TestAssetHealthDiagnosisFlow(unittest.IsolatedAsyncioTestCase):
             retrieve_guidance=lambda asset_model: "<GEnx-1B FIM text>",
             web_search=unused_web_search,
             email_draft=lambda r: EmailDraft(report=r),
+            schedule=unused_schedule,
         )
 
         # the orchestrator must actually hand the prior maintenance history
@@ -314,6 +325,7 @@ class TestAssetHealthDiagnosisFlow(unittest.IsolatedAsyncioTestCase):
             retrieve_guidance=lambda asset_model: "guidance",
             web_search=web_search,
             email_draft=lambda r: EmailDraft(report=r),
+            schedule=unused_schedule,
         )
 
         # not every test run necessarily calls the tool (the fake LLM never
