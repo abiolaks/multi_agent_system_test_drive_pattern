@@ -14,6 +14,8 @@ dependencies = [
     "sentence-transformers==5.1.2",
     "httpx==0.28.1",
     "apscheduler==3.11.0",
+    "fastapi==0.121.2",
+    "uvicorn==0.52.4",
 ]
 
 [tool.uv]
