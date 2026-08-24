@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import os
 from typing import Protocol
 
@@ -12,6 +11,7 @@ from msgraph.generated.models.item_body import ItemBody
 from msgraph.generated.models.message import Message
 from msgraph.generated.models.recipient import Recipient
 
+from fabric_qa.adapters.async_bridge import run_sync
 from fabric_qa.models import EmailDraft, Report
 
 GRAPH_SCOPE = "https://graph.microsoft.com/.default"
@@ -62,7 +62,7 @@ class GraphEmailPort:
             body=ItemBody(content_type=BodyType.Text, content=report.summary),
             to_recipients=[Recipient(email_address=EmailAddress(address=self._recipient))],
         )
-        created = asyncio.run(self._messages.create_draft(self._sender_upn, message))
+        created = run_sync(self._messages.create_draft(self._sender_upn, message))
         return EmailDraft(report=report, provider_ref=created.id)
 
     def send(self, draft: EmailDraft) -> None:
@@ -70,7 +70,7 @@ class GraphEmailPort:
             raise ValueError(
                 "cannot send an EmailDraft with no provider_ref - was it created by this adapter's draft()?"
             )
-        asyncio.run(self._messages.send(self._sender_upn, draft.provider_ref))
+        run_sync(self._messages.send(self._sender_upn, draft.provider_ref))
         draft.sent = True
 
 

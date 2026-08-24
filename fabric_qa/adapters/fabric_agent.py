@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import json
 import os
 import re
@@ -10,6 +9,7 @@ from azure.identity import ClientSecretCredential
 from mcp import ClientSession
 from mcp.client.streamable_http import streamablehttp_client
 
+from fabric_qa.adapters.async_bridge import run_sync
 from fabric_qa.models import AssetReadings, FabricResult, MaintenanceRecord, Reading
 
 FABRIC_SCOPE = "https://api.fabric.microsoft.com/.default"
@@ -83,16 +83,16 @@ class FabricDataAgentPort:
         return cls(client)
 
     def fetch(self, question: str) -> FabricResult:
-        text = asyncio.run(self._client.ask(question))
+        text = run_sync(self._client.ask(question))
         return FabricResult(data=text)
 
     def fetch_readings(self, asset_id: str) -> AssetReadings:
-        payload = asyncio.run(self._ask_json(_readings_question(asset_id)))
+        payload = run_sync(self._ask_json(_readings_question(asset_id)))
         readings = [Reading(parameter=name, value=float(value)) for name, value in payload["readings"].items()]
         return AssetReadings(asset_id=asset_id, asset_model=payload["asset_model"], readings=readings)
 
     def fetch_maintenance_history(self, asset_id: str) -> list[MaintenanceRecord]:
-        payload = asyncio.run(self._ask_json(_maintenance_history_question(asset_id)))
+        payload = run_sync(self._ask_json(_maintenance_history_question(asset_id)))
         return [
             MaintenanceRecord(
                 work_order_id=row["work_order_id"],
