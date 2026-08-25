@@ -1,0 +1,11 @@
+node_modules/
+.next/
+next-env.d.ts
+
+# The root .gitignore's bare `lib/` rule (a Python packaging-artifact
+# pattern) unintentionally matches any directory named `lib` anywhere in
+# the repo - un-ignore this frontend's own lib/ dirs.
+!/lib/
+!/lib/**
+!/app/api/lib/
+!/app/api/lib/**

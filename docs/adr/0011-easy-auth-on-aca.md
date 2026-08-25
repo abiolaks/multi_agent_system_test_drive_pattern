@@ -1,0 +1,5 @@
+# Identity via ACA Easy Auth, no app-level auth code
+
+The web frontend and its FastAPI backend rely on Azure Container Apps' built-in authentication (Easy Auth) for identity, rather than implementing login, sessions, or token handling in application code. ACA already terminates the Entra ID login flow ahead of the container and injects the caller's identity as request headers (`x-ms-client-principal`, `x-ms-client-principal-name`, `x-ms-token-aad-access-token`); the app only decodes them. This is not a new platform dependency — ADR 0005 already places the agent service on Azure Container Apps for cost reasons unrelated to auth, so Easy Auth is a configuration checkbox on infrastructure already committed to, not a build. Locally (`next dev`, bare `uvicorn`), these headers are absent and the app runs identity-less, which is acceptable since local development never needed multi-user identity in the first place.
+
+If the system is ever hosted somewhere other than ACA/App Service, this decision must be revisited — Easy Auth headers only appear behind those two platforms.

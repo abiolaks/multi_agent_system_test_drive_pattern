@@ -1,0 +1,221 @@
+:root {
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --muted: #6b6b6b;
+  --border: #e2e2e2;
+  --accent: #2563eb;
+  --accent-fg: #ffffff;
+  --card-bg: #f7f7f8;
+  --alarm: #b91c1c;
+  --advisory: #b45309;
+  --normal: #15803d;
+  --error-bg: #fef2f2;
+  --error-fg: #991b1b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f0f10;
+    --fg: #e8e8e8;
+    --muted: #9a9a9a;
+    --border: #2a2a2c;
+    --accent: #3b82f6;
+    --accent-fg: #0f0f10;
+    --card-bg: #18181a;
+    --alarm: #f87171;
+    --advisory: #fbbf24;
+    --normal: #4ade80;
+    --error-bg: #2a1414;
+    --error-fg: #fca5a5;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+h1 {
+  font-size: 1.375rem;
+  font-weight: 600;
+  margin: 0 0 1.5rem;
+}
+
+.identity {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  min-height: 1.1em;
+}
+
+.chat-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.chat-input {
+  flex: 1;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.chat-input:disabled {
+  opacity: 0.6;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.action-button {
+  padding: 0.65rem 1.1rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-weight: 500;
+}
+
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.secondary-button {
+  padding: 0.65rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--fg);
+}
+
+.error-banner {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: var(--error-bg);
+  color: var(--error-fg);
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.loading {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.report-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem 1.4rem;
+  margin-bottom: 1.5rem;
+  background: var(--card-bg);
+}
+
+.report-summary {
+  white-space: pre-wrap;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.verdict-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.verdict-table th,
+.verdict-table td {
+  text-align: left;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.health-normal {
+  color: var(--normal);
+  font-weight: 600;
+}
+
+.health-advisory {
+  color: var(--advisory);
+  font-weight: 600;
+}
+
+.health-alarm {
+  color: var(--alarm);
+  font-weight: 600;
+}
+
+.diagnosis {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.diagnosis dt {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  margin-top: 0.75rem;
+}
+
+.diagnosis dd {
+  margin: 0.25rem 0 0;
+  line-height: 1.45;
+}
+
+.email-confirm-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.1rem 1.3rem;
+  background: var(--card-bg);
+}
+
+.email-confirm-header {
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+}
+
+.email-confirm-status {
+  margin: 0.6rem 0;
+  font-size: 0.9rem;
+}
+
+.email-confirm-status-sent {
+  color: var(--normal);
+}
+
+.email-confirm-status-cancelled {
+  color: var(--muted);
+}
+
+.email-confirm-status-error {
+  color: var(--error-fg);
+}
+
+.email-confirm-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
